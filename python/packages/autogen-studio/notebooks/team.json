@@ -1,5 +1,5 @@
 {
-  "provider": "autogen_agentchat.teams.RoundRobinGroupChat",
+  "provider": "asssutogen_agentchat.teams.RoundRobinGroupChat",
   "component_type": "team",
   "version": 1,
   "component_version": 1,

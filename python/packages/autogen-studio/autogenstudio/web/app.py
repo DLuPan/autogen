@@ -7,7 +7,11 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastmcp import FastMCP
 from loguru import logger
+
+from autogenstudio.mcp import initialize_mcp_services
+from autogenstudio.web.routes import stock
 
 from ..version import VERSION
 from .auth import authroutes
@@ -133,6 +137,13 @@ api.include_router(
     tags=["gallery"],
     responses={404: {"description": "Not found"}},
 )
+# Include stock routes
+api.include_router(
+    stock.router,
+    prefix="/stock",
+    tags=["stock"],
+    responses={404: {"description": "Not found"}},
+)
 # Include authentication routes
 api.include_router(
     authroutes.router,
@@ -140,6 +151,7 @@ api.include_router(
     tags=["auth"],
     responses={404: {"description": "Not found"}},
 )
+
 
 # Version endpoint
 
@@ -173,7 +185,11 @@ app.mount(
     StaticFiles(directory=initializer.static_root, html=True),
     name="files",
 )
+
+# init mcp server
+initialize_mcp_services(app)
 app.mount("/", StaticFiles(directory=initializer.ui_root, html=True), name="ui")
+
 
 # Error handlers
 

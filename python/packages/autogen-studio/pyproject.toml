@@ -19,6 +19,7 @@ classifiers = [
 
 
 dependencies = [
+    "fastapi-mcp",
     "pydantic",
     "pydantic-settings",
     "fastapi[standard]",

@@ -62,14 +62,17 @@ class Message(BaseDBModel, table=True):
     session_id: Optional[int] = Field(
         default=None, sa_column=Column(Integer, ForeignKey("session.id", ondelete="NO ACTION"))
     )
-    run_id: Optional[int] = Field(default=None, sa_column=Column(Integer, ForeignKey("run.id", ondelete="CASCADE")))
+    run_id: Optional[int] = Field(default=None, sa_column=Column(
+        Integer, ForeignKey("run.id", ondelete="CASCADE")))
 
-    message_meta: Optional[Union[MessageMeta, dict]] = Field(default={}, sa_column=Column(JSON))
+    message_meta: Optional[Union[MessageMeta, dict]] = Field(
+        default={}, sa_column=Column(JSON))
 
 
 class Session(BaseDBModel, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
-    team_id: Optional[int] = Field(default=None, sa_column=Column(Integer, ForeignKey("team.id", ondelete="CASCADE")))
+    team_id: Optional[int] = Field(default=None, sa_column=Column(
+        Integer, ForeignKey("team.id", ondelete="CASCADE")))
     name: Optional[str] = None
 
     @field_validator("created_at", "updated_at", mode="before")
@@ -104,13 +107,17 @@ class Run(BaseDBModel, table=True):
     )
 
     # Store TeamResult which contains TaskResult
-    team_result: Union[TeamResult, dict] = Field(default=None, sa_column=Column(JSON))
+    team_result: Union[TeamResult, dict] = Field(
+        default=None, sa_column=Column(JSON))
 
     error_message: Optional[str] = None
     version: Optional[str] = "0.0.1"
-    messages: Union[List[Message], List[dict]] = Field(default_factory=list, sa_column=Column(JSON))
+    messages: Union[List[Message], List[dict]] = Field(
+        default_factory=list, sa_column=Column(JSON))
 
-    model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})  # type: ignore[call-arg]
+    # type: ignore[call-arg]
+    model_config = ConfigDict(
+        json_encoders={datetime: lambda v: v.isoformat()})
     user_id: Optional[str] = None
 
 
@@ -122,7 +129,8 @@ class Gallery(BaseDBModel, table=True):
             id="",
             name="",
             metadata=GalleryMetadata(author="", version=""),
-            components=GalleryComponents(agents=[], models=[], tools=[], terminations=[], teams=[]),
+            components=GalleryComponents(
+                agents=[], models=[], tools=[], terminations=[], teams=[]),
         ),
         sa_column=Column(JSON),
     )
@@ -138,7 +146,8 @@ class Gallery(BaseDBModel, table=True):
 class Settings(BaseDBModel, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
 
-    config: Union[SettingsConfig, dict] = Field(default_factory=SettingsConfig, sa_column=Column(JSON))
+    config: Union[SettingsConfig, dict] = Field(
+        default_factory=SettingsConfig, sa_column=Column(JSON))
 
 
 # --- Evaluation system database models ---
@@ -182,7 +191,8 @@ class EvalRunDB(BaseDBModel, table=True):
     judge_config: Union[ComponentModel, dict] = Field(sa_column=Column(JSON))
 
     # List of criteria IDs or embedded criteria configs
-    criteria_configs: List[Union[EvalJudgeCriteria, dict]] = Field(default_factory=list, sa_column=Column(JSON))
+    criteria_configs: List[Union[EvalJudgeCriteria, dict]] = Field(
+        default_factory=list, sa_column=Column(JSON))
 
     # Run status and timing information
     status: EvalRunStatus = Field(default=EvalRunStatus.PENDING)
@@ -190,9 +200,11 @@ class EvalRunDB(BaseDBModel, table=True):
     end_time: Optional[datetime] = Field(default=None)
 
     # Results (updated as they become available)
-    run_result: Union[EvalRunResult, dict] = Field(default=None, sa_column=Column(JSON))
+    run_result: Union[EvalRunResult, dict] = Field(
+        default=None, sa_column=Column(JSON))
 
-    score_result: Union[EvalScore, dict] = Field(default=None, sa_column=Column(JSON))
+    score_result: Union[EvalScore, dict] = Field(
+        default=None, sa_column=Column(JSON))
 
     # Additional metadata
     error_message: Optional[str] = None
