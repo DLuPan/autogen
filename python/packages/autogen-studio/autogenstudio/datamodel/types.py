@@ -1,4 +1,5 @@
 # from dataclasses import Field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Sequence
 
@@ -80,7 +81,8 @@ class GalleryConfig(BaseModel):
     components: GalleryComponents
 
     model_config = ConfigDict(
-        json_encoders={datetime: lambda v: v.isoformat(), SecretStr: lambda v: v.get_secret_value()}
+        json_encoders={datetime: lambda v: v.isoformat(
+        ), SecretStr: lambda v: v.get_secret_value()}
     )
 
 
