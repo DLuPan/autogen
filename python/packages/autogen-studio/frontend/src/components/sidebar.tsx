@@ -14,6 +14,7 @@ import {
   Beaker,
   LucideBeaker,
   FlaskConical,
+  ChartCandlestick
 } from "lucide-react";
 import Icon from "./icons";
 import { BeakerIcon } from "@heroicons/react/24/outline";
@@ -29,6 +30,7 @@ interface INavItem {
   }>;
 }
 
+/* 添加导航属性 */
 const navigation: INavItem[] = [
   {
     name: "Team Builder",
@@ -48,17 +50,23 @@ const navigation: INavItem[] = [
     icon: GalleryHorizontalEnd,
     breadcrumbs: [{ name: "Gallery", href: "/gallery", current: true }],
   },
-  // {
-  //   name: "Labs",
-  //   href: "/labs",
-  //   icon: FlaskConical,
-  //   breadcrumbs: [{ name: "Labs", href: "/labs", current: true }],
-  // },
+  {
+    name: "Labs",
+    href: "/labs",
+    icon: FlaskConical,
+    breadcrumbs: [{ name: "Labs", href: "/labs", current: true }],
+  },
   {
     name: "Deploy",
     href: "/deploy",
     icon: Rocket,
     breadcrumbs: [{ name: "Deploy", href: "/deploy", current: true }],
+  },
+  {
+    name: "Stock",
+    href: "/stock",
+    icon: ChartCandlestick,
+    breadcrumbs: [{ name: "Stock", href: "/stock", current: true }],
   },
 ];
 

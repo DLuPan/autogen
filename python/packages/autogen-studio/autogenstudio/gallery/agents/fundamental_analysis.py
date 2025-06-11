@@ -18,7 +18,7 @@ from typing import (
     Union,
 )
 
-from autogen_core import AgentRuntime, AgentType, CancellationToken, Component, ComponentModel, FunctionCall, Subscription, SubscriptionInstantiationContext, TypePrefixSubscription
+from autogen_core import AgentRuntime, AgentType, BaseAgent, CancellationToken, Component, ComponentModel, FunctionCall, MessageContext, Subscription, SubscriptionInstantiationContext, TypePrefixSubscription, default_subscription, message_handler
 from autogen_core.memory import Memory
 from autogen_core.model_context import (
     ChatCompletionContext,
@@ -40,6 +40,8 @@ from pydantic import BaseModel
 from autogen_core.tools import BaseTool, FunctionTool, StaticWorkbench, Workbench
 from pydantic import BaseModel
 from typing_extensions import Self
+
+from autogenstudio.gallery.agents._types import FinalSolverResponse, SolverRequest
 
 
 @dataclass
@@ -67,7 +69,8 @@ class FundamentalAnalysisAgentConfig(BaseModel):
     structured_message_factory: ComponentModel | None = None
 
 
-class FundamentalAnalysisAgent(AssistantAgent, Component[FundamentalAnalysisAgentConfig]):
+@default_subscription
+class FundamentalAnalysisAgent(AssistantAgent, BaseAgent, Component[FundamentalAnalysisAgentConfig]):
     component_config_schema = FundamentalAnalysisAgentConfig
     component_provider_override = "autogenstudio.gallery.agents.fundamental_analysis.FundamentalAnalysisAgent"
 
@@ -109,44 +112,27 @@ class FundamentalAnalysisAgent(AssistantAgent, Component[FundamentalAnalysisAgen
         self._topic_type = topic_type
         self._max_round = max_round
 
-    @classmethod
-    async def register(
-        cls,
-        runtime: AgentRuntime,
-        type: str,
-        factory: Callable[[], Self | Awaitable[Self]],
-        *,
-        skip_class_subscriptions: bool = False,
-        skip_direct_message_subscription: bool = False,
-    ) -> AgentType:
-        agent_type = AgentType(type)
-        agent_type = await runtime.register_factory(type=agent_type, agent_factory=factory, expected_class=cls)
-        if not skip_class_subscriptions:
-            with SubscriptionInstantiationContext.populate_context(agent_type):
-                subscriptions: List[Subscription] = []
-                for unbound_subscription in cls._unbound_subscriptions():
-                    subscriptions_list_result = unbound_subscription()
-                    if inspect.isawaitable(subscriptions_list_result):
-                        subscriptions_list = await subscriptions_list_result
-                    else:
-                        subscriptions_list = subscriptions_list_result
+    @message_handler
+    async def handle_request(self, message: SolverRequest, ctx: MessageContext) -> None:
+        # 运行代理
+        task_reulst = await self.run(message.question)
 
-                    subscriptions.extend(subscriptions_list)
-            for subscription in subscriptions:
-                await runtime.add_subscription(subscription)
-
-        if not skip_direct_message_subscription:
-            # Additionally adds a special prefix subscription for this agent to receive direct messages
-            await runtime.add_subscription(
-                TypePrefixSubscription(
-                    # The prefix MUST include ":" to avoid collisions with other agents
-                    topic_type_prefix=agent_type.type + ":",
-                    agent_type=agent_type.type,
-                )
-            )
-
-        # TODO: deduplication
-        for _message_type, serializer in cls._handles_types():
-            runtime.add_message_serializer(serializer)
-
-        return agent_type
+        # 如果不是终止消息，则发布最终响应。
+        self._round += 1
+        print(task_reulst)
+        # if self._round == self._max_round:
+        #     # If the counter reaches the maximum round, publishes a final response.
+        #     await self.publish_message(
+        #         FinalSolverResponse(answer=task_reulst.), topic_id=DefaultTopicId()
+        #     )
+        # else:
+        #     # Publish intermediate response to the topic associated with this solver.
+        #     await self.publish_message(
+        #         IntermediateSolverResponse(
+        #             content=model_result.content,
+        #             question=message.question,
+        #             answer=answer,
+        #             round=self._round,
+        #         ),
+        #         topic_id=DefaultTopicId(type=self._topic_type),
+        #     )

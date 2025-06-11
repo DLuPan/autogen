@@ -8,6 +8,8 @@ Run the UI in dev mode (make changes and see them reflected in the browser with 
 yarn install
 yarn start               # local development
 yarn start --host 0.0.0.0  # in container (enables external access)
+yarn develop --host 0.0.0.0
+yarn dev --host 0.0.0.0
 ```
 
 This should start the server on [port 8000](http://localhost:8000).
